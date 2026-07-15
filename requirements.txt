@@ -1,0 +1,5 @@
+langchain
+langchain-ollama
+chromadb
+requests
+pytest

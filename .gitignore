@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Virtual environment
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Chroma database
+chroma/
+*.db
+
+# Logs
+*.log
+
+# Model files
+*.bin
+*.gguf
