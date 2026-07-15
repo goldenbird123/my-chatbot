@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-from core.llm import chat
+from core.llm import create_llm
 
 from memory.memory_manager import MemoryManager
 from memory.memory_extractor import MemoryExtractor
@@ -21,6 +21,7 @@ class QwenBrain:
 
 
     def __init__(self):
+        self.llm = create_llm()
 
         self.memory = MemoryManager()
 
@@ -247,7 +248,7 @@ class QwenBrain:
         })
 
 
-        answer = chat(messages)
+        answer = llm_service.chat(messages)
 
 
         history.append({

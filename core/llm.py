@@ -79,6 +79,53 @@ class LocalOllama(LLM):
 # 创建模型实例
 
 llm = LocalOllama()
+class LLMService:
+
+
+    def __init__(self):
+
+        self.model = LocalOllama()
+
+
+
+    def chat(self, messages):
+
+
+        prompt = ""
+
+
+        for m in messages:
+
+
+            if m["role"] == "system":
+
+                prompt += (
+                    "系统设定："
+                    + m["content"]
+                    + "\n\n"
+                )
+
+
+            elif m["role"] == "user":
+
+                prompt += (
+                    "用户："
+                    + m["content"]
+                    + "\n\n"
+                )
+
+
+            elif m["role"] == "assistant":
+
+                prompt += (
+                    "助手："
+                    + m["content"]
+                    + "\n\n"
+                )
+
+
+        return self.model.invoke(prompt)
+llm_service=LLMService()
 
 
 
