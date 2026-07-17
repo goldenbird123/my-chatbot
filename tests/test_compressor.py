@@ -1,80 +1,35 @@
-import sys
-import os
-
-
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
 from memory.memory_compressor import MemoryCompressor
-from memory.memory_manager import MemoryManager
 
 
+class FakeMemory:
+    def __init__(self):
+        self.history = [{"role": "user", "content": str(i)} for i in range(35)]
+        self.summary = {}
 
-memory = MemoryManager()
+    def load_history(self):
+        return list(self.history)
 
+    def save_history(self, history):
+        self.history = list(history)
 
+    def load_summary(self):
+        return self.summary
 
-history=[]
-
-
-
-for i in range(35):
-
-    history.append({
-
-        "role":"user",
-
-        "content":
-        f"这是第{i}次聊天，我学习LangChain"
-
-    })
+    def save_summary(self, summary):
+        self.summary = summary
 
 
-
-memory.save_history(
-    history
-)
-
+class FakeSummary:
+    def summarize(self, history, old_summary=""):
+        return "summary"
 
 
-compressor = MemoryCompressor()
-
-
-
-print(
-    "是否需要压缩:"
-)
-
-print(
-    compressor.check()
-)
-
-
-
-result = compressor.compress()
-
-
-
-print(
-    "新的总结:"
-)
-
-print(
-    result
-)
-
-
-
-print(
-    "剩余聊天:"
-)
-
-print(
-    len(
-        memory.load_history()
+def test_memory_compressor_compresses_long_history():
+    memory = FakeMemory()
+    compressor = MemoryCompressor(
+        memory=memory, summarizer=FakeSummary(), max_history=30, keep_recent=10
     )
-)
+    assert compressor.check() is True
+    assert compressor.compress() == "summary"
+    assert memory.summary == {"content": "summary"}
+    assert len(memory.history) == 10

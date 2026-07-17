@@ -1,59 +1,23 @@
-import sys
-import os
-
-
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
+from app.context_builder import ContextBuilder
 from memory.context_manager import ContextManager
 
 
-
-manager = ContextManager()
-
-
-
-history=[]
+def test_legacy_context_manager_keeps_recent_history():
+    history = [{"role": "user", "content": str(i)} for i in range(10)]
+    context = ContextManager(max_history=3).build_context(history, {"name": "Alice"})
+    assert [item["content"] for item in context["history"]] == ["7", "8", "9"]
 
 
-for i in range(20):
-
-    history.append({
-
-        "role":"user",
-
-        "content":
-        f"第{i}句话"
-
-    })
-
-
-
-result = manager.build_context(
-
-    history,
-
-    "用户学习LangChain"
-
-)
-
-
-
-print(
-    "聊天数量:"
-)
-
-print(
-    len(result["history"])
-)
-
-
-
-print(
-    result
-)
+def test_context_builder_adds_memory_history_and_current_user():
+    messages = ContextBuilder().build_messages(
+        "current",
+        {
+            "profile": {"name": "Alice"},
+            "summary": {},
+            "retrieved": {},
+            "history": [{"role": "assistant", "content": "previous"}],
+        },
+    )
+    assert messages[0]["role"] == "system"
+    assert "Alice" in messages[0]["content"]
+    assert messages[-1] == {"role": "user", "content": "current"}

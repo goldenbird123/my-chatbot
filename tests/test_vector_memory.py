@@ -1,58 +1,63 @@
-import sys
-import os
+from memory.chroma_store import VectorMemory
 
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
+class FakeCollection:
+    def __init__(self):
+        self.items = {}
+        self.query_calls = 0
+
+    def get(self, ids):
+        return {"ids": [item for item in ids if item in self.items]}
+
+    def count(self):
+        return len(self.items)
+
+    def add(self, ids, embeddings, documents, metadatas):
+        self.items[ids[0]] = documents[0]
+
+    def query(self, query_embeddings, n_results):
+        self.query_calls += 1
+        return {
+            "documents": [list(self.items.values())[:n_results]],
+            "distances": [[0.5]],
+        }
+
+
+def test_vector_memory_uses_hash_id_to_skip_exact_duplicates():
+    collection = FakeCollection()
+    embed_calls = []
+
+    def embedder(text, **kwargs):
+        embed_calls.append(text)
+        return [0.1, 0.2]
+
+    memory = VectorMemory(
+        collection=collection, embedder=embedder, duplicate_distance=0
     )
-)
-from memory.vector_memory import vector_memory
+    assert memory.add_memory("same text") is True
+    assert memory.add_memory("same text") is False
+    assert embed_calls == ["same text"]
 
 
-
-print("测试开始")
-
-
-memory=vector_memory()
-
-
-
-print("\n第一次添加")
-
-
-memory.add_memory(
-    "golden bird正在学习LangChain，目标成为AI Agent工程师"
-)
+def test_vector_memory_embedding_cache_is_bounded():
+    memory = VectorMemory(
+        collection=FakeCollection(),
+        embedder=lambda text, **kwargs: [float(len(text))],
+        cache_size=2,
+        duplicate_distance=0,
+    )
+    memory.embedding("a")
+    memory.embedding("b")
+    memory.embedding("c")
+    assert list(memory._embedding_cache) == ["b", "c"]
 
 
-
-print("\n第二次添加相似内容")
-
-
-memory.add_memory(
-    "golden bird最近继续学习LangChain"
-)
-
-
-
-print("\n当前记忆数量")
-
-
-print(
-    memory.count_memory()
-)
-
-
-
-print("\n搜索")
-
-
-result=memory.search(
-    "他的学习方向是什么"
-)
-
-
-print(result)
+def test_vector_memory_search_limits_to_collection_size():
+    collection = FakeCollection()
+    collection.items["1"] = "memory"
+    memory = VectorMemory(
+        collection=collection,
+        embedder=lambda text, **kwargs: [0.1],
+        duplicate_distance=0,
+    )
+    assert memory.search("query", limit=3) == ["memory"]

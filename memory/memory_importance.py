@@ -1,5 +1,7 @@
-from memory.memory_judge import MemoryJudge
-class MemoryImportance:
+from memory.importance import MemoryImportance, MemoryJudge
+
+
+class _LegacyMemoryImportance:
     def __init__(self):
         self.judge = MemoryJudge()
 

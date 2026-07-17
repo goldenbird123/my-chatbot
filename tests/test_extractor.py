@@ -1,25 +1,22 @@
-import sys
-import os
+from memory.extractor import MemoryExtractor
 
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
+class FakeService:
+    def chat(self, messages):
+        return '```json\n{"memory": true, "data": {"name": "Alice", "learning": "LangChain"}}\n```'
 
 
-from memory.memory_extractor import MemoryExtractor
+def test_memory_extractor_parses_fenced_json():
+    result = MemoryExtractor(service=FakeService()).extract("我叫 Alice")
+    assert result["memory"] is True
+    assert result["data"]["name"] == "Alice"
 
 
-extractor = MemoryExtractor()
+class InvalidService:
+    def chat(self, messages):
+        return "not-json"
 
 
-result = extractor.extract(
-    "我的名字叫golden bird，我正在学习LangChain"
-)
-
-
-print(result)
+def test_memory_extractor_fails_closed_on_invalid_json():
+    result = MemoryExtractor(service=InvalidService()).extract("hello")
+    assert result["memory"] is False

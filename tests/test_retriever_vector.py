@@ -1,33 +1,19 @@
-import sys
-import os
+from memory.retriever import MemoryRetriever
 
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-from memory.memory_retriever import MemoryRetriever
-from memory.memory_manager import MemoryManager
+class EmptyMemory:
+    class Vector:
+        def search(self, query, limit=3):
+            return []
+
+    vector_memory = Vector()
+
+    def load_profile(self):
+        return {}
+
+    def load_summary(self):
+        return {}
 
 
-print("开始测试")
-
-
-retriever = MemoryRetriever(MemoryManager())
-
-
-
-result = retriever.retrieve(
-    "你记得我之前学习什么吗"
-)
-
-
-print("================")
-
-print(result)
-
-
-print("================")
+def test_retriever_omits_empty_values():
+    assert MemoryRetriever(EmptyMemory()).retrieve("记得之前吗") == {}

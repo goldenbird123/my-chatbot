@@ -1,44 +1,11 @@
 class ContextManager:
+    """Legacy context facade. New model-message construction lives in app.ContextBuilder."""
 
+    def __init__(self, max_history=6):
+        self.max_history = max_history
 
-    def __init__(self):
-
-        # 最大保留聊天数量
-        self.max_history = 6
-
-
-
-    def build_context(
-            self,
-            history,
-            memory
-    ):
-
-
-        context = {
-
-            "history": [],
-
-            "memory": memory
-
+    def build_context(self, history, memory):
+        return {
+            "history": list(history)[-self.max_history :],
+            "memory": memory,
         }
-
-
-        # =====================
-        # 处理聊天记录
-        # =====================
-
-
-        if len(history) > self.max_history:
-
-
-            history = history[
-                -self.max_history:
-            ]
-
-
-        context["history"] = history
-
-
-
-        return context

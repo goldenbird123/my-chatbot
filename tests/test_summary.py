@@ -1,59 +1,14 @@
-import sys
-import os
+from memory.summarizer import MemorySummarizer
 
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
+class FakeService:
+    def chat(self, messages):
+        return "用户正在学习 LangChain"
 
 
-from memory.memory_summary import MemorySummary
-from memory.memory_manager import MemoryManager
-print("==============================")
-print("       测试 MemorySummary")
-print("==============================")
-
-
-# 创建管理器
-memory = MemoryManager()
-
-
-# 读取聊天记录
-history = memory.load_history()
-
-
-print("\n当前聊天记录数量:")
-print(len(history))
-
-
-print("\n开始生成总结...\n")
-
-
-# 创建总结器
-summary = MemorySummary()
-
-
-# 注意这里！！！
-# summarize只需要history
-result = summary.summarize(history)
-
-
-print("==============================")
-print("生成结果:")
-print(result)
-print("==============================")
-
-
-# 保存
-memory.save_summary(
-    {
-        "summary": result
-    }
-)
-
-
-print("\n保存成功")
+def test_memory_summarizer_uses_model_and_persists_normalized_summary(tmp_path):
+    summarizer = MemorySummarizer(tmp_path / "summary.json", service=FakeService())
+    result = summarizer.summarize([{"role": "user", "content": "学习 LangChain"}])
+    assert result == "用户正在学习 LangChain"
+    summarizer.save({"summary": result})
+    assert summarizer.load() == {"content": "用户正在学习 LangChain"}

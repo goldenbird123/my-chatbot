@@ -1,8 +1,9 @@
 import requests
 import json
+from memory.extractor import MemoryExtractor
 
 
-class MemoryExtractor:
+class _LegacyMemoryExtractor:
 
 
     def extract(self, user_input):

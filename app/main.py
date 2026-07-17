@@ -1,39 +1,46 @@
+from __future__ import annotations
+
+import logging
 import os
-import sys
 
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "true"
+from app.agent import create_agent
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
+
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("TRANSFORMERS_NO_ADVISORY_WARNINGS", "true")
+
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
+logger = logging.getLogger(__name__)
 
-from app.qwen_brain_fixed import QwenBrain
 
-
-def main():
+def main() -> None:
     print("==============================")
-    print("欢迎使用本地AI聊天助手")
+    print("欢迎使用本地 AI 聊天助手")
+    print("输入 exit、quit 或 再见 退出")
     print("==============================")
-    print("我是你的专属聊天伙伴")
-    print("输入 exit 或 再见 退出聊天")
-    print("------------------------------")
-
-    brain = QwenBrain()
-
-    while True:
-        user_input = input("\n你：")
-
-        if user_input in ["exit", "退出", "再见"]:
-            print("再见，欢迎下次再来")
-            break
-
-        answer = brain.chat(user_input)
-        print("鸟神：", answer)
+    agent = create_agent()
+    try:
+        while True:
+            try:
+                user_input = input("\n你：").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("\n再见！")
+                break
+            if not user_input:
+                continue
+            if user_input.casefold() in {"exit", "quit"} or user_input in {"再见", "拜拜", "结束"}:
+                print("再见！")
+                break
+            try:
+                print("助手：", agent.chat(user_input))
+            except Exception:
+                logger.exception("Chat handling failed")
+                print("助手：抱歉，处理消息时出现了问题。")
+    finally:
+        agent.close()
 
 
 if __name__ == "__main__":

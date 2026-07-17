@@ -4,6 +4,7 @@ import threading
 from pathlib import Path
 
 from memory.vector_instance import get_vector_memory
+from memory.manager import MemoryManager
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -12,7 +13,7 @@ HISTORY_PATH = PROJECT_ROOT / "memory" / "chat_history.json"
 SUMMARY_PATH = PROJECT_ROOT / "memory" / "memory_summary.json"
 
 
-class MemoryManager:
+class _LegacyMemoryManager:
     def __init__(self):
 
         self.vector_memory = get_vector_memory()

@@ -1,3 +1,8 @@
+"""Deprecated compatibility tombstone.
+
+The canonical implementation is the ``core.llm`` package. The historical
+implementation below is intentionally inert.
+
 from langchain_core.language_models.llms import LLM
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -179,3 +184,4 @@ def chat(messages):
 
 
         return "模型调用失败，请检查 Ollama 服务"
+"""

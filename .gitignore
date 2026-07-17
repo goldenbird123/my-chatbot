@@ -1,25 +1,30 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Environment
+# Environment and local overrides
 .env
-
-# Virtual environment
+.env.*
+!.env.example
 venv/
 env/
+.venv/
 
 # IDE
 .vscode/
 .idea/
 
-# Chroma database
+# Private local memory and vector databases
+memory/*.json
+memory/vector_store/
 chroma/
+*.sqlite3
 *.db
 
-# Logs
+# Logs and model artifacts
 *.log
-
-# Model files
 *.bin
 *.gguf

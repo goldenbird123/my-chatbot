@@ -1,35 +1,38 @@
-import sys
-import os
+from memory.retriever import MemoryRetriever
 
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
+class FakeVectorMemory:
+    def search(self, query, limit=3):
+        return ["用户正在开发 AI Agent"]
 
 
-from memory.memory_retriever import MemoryRetriever
-from memory.memory_manager import MemoryManager
+class FakeMemory:
+    vector_memory = FakeVectorMemory()
+
+    def load_profile(self):
+        return {
+            "name": "Alice",
+            "learning": "LangChain",
+            "project": "AI Agent",
+            "likes": "简洁回答",
+        }
+
+    def load_summary(self):
+        return {"content": "长期学习本地 Agent"}
 
 
-retriever = MemoryRetriever(MemoryManager())
+def test_retriever_combines_structured_and_vector_memory():
+    result = MemoryRetriever(FakeMemory()).retrieve("你记得我的项目吗")
+    assert result["project"] == "AI Agent"
+    assert result["summary"]["content"] == "长期学习本地 Agent"
+    assert result["vector_memory"] == ["用户正在开发 AI Agent"]
 
 
-tests = [
-    "我的学习方向是什么？",
-    "我的项目是什么？",
-    "你知道我的名字吗？",
-    "你还记得我吗？"
-]
+def test_retriever_avoids_vector_search_for_small_talk():
+    class ExplodingVector:
+        def search(self, query, limit=3):
+            raise AssertionError("should not search vector memory")
 
-
-for t in tests:
-
-    print("\n问题:",t)
-
-    result = retriever.retrieve(t)
-
-    print(result)
+    memory = FakeMemory()
+    memory.vector_memory = ExplodingVector()
+    assert MemoryRetriever(memory).retrieve("你好") == {}

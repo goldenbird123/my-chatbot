@@ -1,6 +1,9 @@
-from memory.memory_manager import MemoryManager
+from memory.manager import MemoryManager
 from memory.vector_instance import get_vector_memory
-class MemoryRetriever:
+from memory.retriever import MemoryRetriever
+
+
+class _LegacyMemoryRetriever:
     def __init__(self,memory):
 
         self.memory = memory

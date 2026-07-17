@@ -1,76 +1,26 @@
-from memory.memory_summary import MemorySummary
-from memory.memory_manager import MemoryManager
+from __future__ import annotations
 
+from app.config import settings
+from memory.manager import MemoryManager
 
 
 class MemoryCompressor:
+    """Compatibility utility for explicit history compression."""
 
-
-    def __init__(self):
-
-        self.memory = MemoryManager()
-
-        self.summary = MemorySummary()
-
-
-        # 超过多少条开始压缩
-
-        self.max_history = 30
-
-
+    def __init__(self, memory=None, summarizer=None, max_history=None, keep_recent=None):
+        self.memory = memory or MemoryManager()
+        self.summary = summarizer or self.memory.summarizer
+        self.max_history = max_history or settings.summary_after_messages
+        self.keep_recent = keep_recent or settings.recent_history_messages
 
     def check(self):
-
-
-        history = self.memory.load_history()
-
-
-        if len(history) < self.max_history:
-
-            return False
-
-
-        return True
-
-
+        return len(self.memory.load_history()) >= self.max_history
 
     def compress(self):
-
-
         history = self.memory.load_history()
-
-
-        print(
-            "开始压缩记忆..."
-        )
-
-
         new_summary = self.summary.summarize(
-            history
+            history, old_summary=self.memory.load_summary()
         )
-
-
-        self.memory.save_summary({
-
-            "summary":
-            new_summary
-
-        })
-
-
-        # 保留最近聊天
-
-        new_history = history[-10:]
-
-
-        self.memory.save_history(
-            new_history
-        )
-
-
-        print(
-            "记忆压缩完成"
-        )
-
-
+        self.memory.save_summary({"content": new_summary})
+        self.memory.save_history(history[-self.keep_recent :])
         return new_summary

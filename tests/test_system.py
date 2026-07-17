@@ -1,86 +1,20 @@
-import json
-import os
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-print("==============================")
-print("      AI助手系统检测")
-print("==============================")
+def test_required_runtime_modules_exist():
+    required = [
+        "app/agent.py",
+        "app/api.py",
+        "core/llm/ollama.py",
+        "memory/manager.py",
+        "memory/pipeline.py",
+        "memory/chroma_store.py",
+    ]
+    assert all((PROJECT_ROOT / path).is_file() for path in required)
 
 
-files = [
-
-PROJECT_ROOT / "app" / "main.py",
-
-PROJECT_ROOT / "app" / "ollama_chat.py",
-
-PROJECT_ROOT / "app" / "personality.py",
-
-PROJECT_ROOT / "memory" / "memory_manager.py",
-
-PROJECT_ROOT / "memory" / "memory_extractor.py",
-
-PROJECT_ROOT / "memory" / "memory_summary.py",
-
-PROJECT_ROOT / "memory" / "user_profile.json",
-
-PROJECT_ROOT / "memory" / "memory_summary.json",
-
-PROJECT_ROOT / "memory" / "chat_history.json"
-
-]
-
-
-print("\n文件检查")
-
-
-for f in files:
-
-    if os.path.exists(f):
-        print("✅",f)
-
-    else:
-        print("❌",f)
-
-
-
-print("\n用户资料")
-
-
-with open(
-    PROJECT_ROOT / "memory" / "user_profile.json",
-    encoding="utf-8"
-) as f:
-
-    print(
-        json.dumps(
-            json.load(f),
-            ensure_ascii=False,
-            indent=4
-        )
-    )
-
-
-
-print("\n长期记忆")
-
-
-with open(
-    PROJECT_ROOT / "memory" / "memory_summary.json",
-    encoding="utf-8"
-) as f:
-
-    print(
-        json.dumps(
-            json.load(f),
-            ensure_ascii=False,
-            indent=4
-        )
-    )
-
-
-
-print("\n测试结束")
+def test_fixed_duplicate_modules_were_removed():
+    assert not list((PROJECT_ROOT / "memory").glob("*_fixed.py"))

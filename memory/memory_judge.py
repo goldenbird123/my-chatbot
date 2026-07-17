@@ -1,9 +1,10 @@
 from core.llm import chat
 import json
+from memory.importance import MemoryJudge
 
 
 
-class MemoryJudge:
+class _LegacyMemoryJudge:
 
 
     def judge(self,text):

@@ -1,3 +1,5 @@
+"""Deprecated implementation retained as an inert compatibility tombstone.
+
 import os
 from pathlib import Path
 
@@ -21,17 +23,19 @@ logging.getLogger("chromadb").setLevel(logging.CRITICAL)
 logging.getLogger("posthog").setLevel(logging.CRITICAL)
 
 
-import chromadb
-import requests
+# Legacy implementation below is intentionally not initialized. Importing Chroma is
+# deferred to memory.chroma_store.VectorMemory to keep application startup fast.
 import time
 import threading
 
+from app.config import MEMORY_PATH
+from app.llm_service import OllamaServiceError, embedding as llm_embedding
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-VECTOR_STORE_PATH = PROJECT_ROOT / "memory" / "vector_store"
+
+VECTOR_STORE_PATH = MEMORY_PATH / "vector_store"
 
 
-class VectorMemory:
+class _LegacyVectorMemory:
 
 
     def __init__(self):
@@ -70,27 +74,11 @@ class VectorMemory:
         print(text)
 
 
-        response=requests.post(
-
-            "http://localhost:11434/api/embeddings",
-
-            json={
-                "model":"nomic-embed-text",
-                "prompt":text
-            },
-
-            timeout=60
-
-        )
-
-
-        response.raise_for_status()
-
-
-        data=response.json()
-
-
-        vector=data["embedding"]
+        try:
+            vector = llm_embedding(text, timeout=60, model="nomic-embed-text")
+        except OllamaServiceError as exc:
+            print("Ollama embedding 失败:", exc)
+            return []
 
 
         print(
@@ -245,3 +233,10 @@ class VectorMemory:
 
 
         return self.collection.count()
+
+
+"""
+
+from memory.chroma_store import VECTOR_STORE_PATH, VectorMemory
+
+__all__ = ["VECTOR_STORE_PATH", "VectorMemory"]

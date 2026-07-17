@@ -1,38 +1,17 @@
-import sys
-import os
+from memory.importance import MemoryImportance
 
 
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
-from memory.memory_extractor import MemoryExtractor
+class FailingJudge:
+    def judge(self, text):
+        raise AssertionError("durable rule should not call LLM judge")
 
 
-extractor = MemoryExtractor()
+def test_importance_matches_stable_profile_rule():
+    result = MemoryImportance(judge=FailingJudge()).check("我叫 Alice")
+    assert result["memory"] is True
+    assert result["type"] == "profile"
 
 
-tests=[
-
-"我今天吃了一碗面",
-
-"我的目标是成为AI Agent工程师",
-
-"我叫golden bird",
-
-"天气今天很好"
-
-]
-
-
-for t in tests:
-
-    print("\n用户:",t)
-
-    result=extractor.extract(t)
-
-    print(result)
+def test_importance_matches_preference_rule():
+    result = MemoryImportance(judge=FailingJudge()).check("我喜欢简洁的回答")
+    assert result["type"] == "preference"

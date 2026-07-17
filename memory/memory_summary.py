@@ -1,7 +1,8 @@
 import requests
+from memory.summarizer import MemorySummarizer as MemorySummary
 
 
-class MemorySummary:
+class _LegacyMemorySummary:
 
 
     def summarize(self,history,old_summary=""):

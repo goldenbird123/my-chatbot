@@ -1,29 +1,19 @@
-import sys
-import os
-
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
-
-from memory.memory_manager import MemoryManager
 from memory.short_memory import ShortMemory
 
 
-manager = MemoryManager()
+class FakeHistory:
+    def recent(self, limit):
+        return [{"content": str(i)} for i in range(limit)]
 
 
-short = ShortMemory(
-    manager
-)
+class FakeManager:
+    history = FakeHistory()
 
 
-result = short.get_recent(5)
+def test_short_memory_returns_requested_recent_messages():
+    result = ShortMemory(FakeManager()).get_recent(3)
+    assert [item["content"] for item in result] == ["0", "1", "2"]
 
 
-print("最近聊天:")
-print(result)
+def test_short_memory_rejects_non_positive_limit():
+    assert ShortMemory(FakeManager()).get_recent(0) == []

@@ -1,8 +1,3 @@
-import sys
-import os
+"""Compatibility imports for the historical root-level config module."""
 
-sys.path.append(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
-)
+from app.config import *  # noqa: F403
